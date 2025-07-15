@@ -12,26 +12,47 @@ const EarlyAccessForm: React.FC = () => {
     setLoading(true);
     setError("");
     setSuccess(false);
+    
     try {
-      const res = await fetch(
-        process.env.NEXT_PUBLIC_SUPABASE_WAITLIST_URL || "",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-            Prefer: "return=representation",
-          },
-          body: JSON.stringify({ email, name }),
-        }
-      );
-      if (!res.ok) {
-        throw new Error("Failed to join waitlist.");
+      const url = process.env.NEXT_PUBLIC_SUPABASE_WAITLIST_URL;
+      const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (!url || !key) {
+        throw new Error("Missing configuration");
       }
+      
+      // Debug logging (will show in browser console)
+      console.log("Submitting to:", url);
+      console.log("Key present:", !!key);
+      
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": key,
+          "Authorization": `Bearer ${key}`,
+          "Prefer": "return=representation",
+        },
+        body: JSON.stringify({ email, name }),
+      });
+      
+      console.log("Response status:", res.status);
+      console.log("Response headers:", Object.fromEntries(res.headers.entries()));
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Error response:", errorText);
+        if(res.status == 409) {
+          throw new Error("You're already on the waitlist!");
+        }
+        throw new Error(`Failed to join waitlist`);
+      }
+      
       setSuccess(true);
       setEmail("");
       setName("");
     } catch (err: unknown) {
+      console.error("Form error:", err);
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
