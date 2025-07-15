@@ -9,6 +9,11 @@ import EarlyAccessSection from "./sections/EarlyAccessSection";
 import FooterSection from "./sections/FooterSection";
 
 export default function Home() {
+  const handleGetEarlyAccess = () => {
+    const el = document.getElementById('waitlist-form');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <main style={{ 
       minHeight: '100vh', 
@@ -34,7 +39,7 @@ export default function Home() {
         pointerEvents: 'none'
       }} />
 
-      <HeroSection />
+      <HeroSection onGetEarlyAccess={handleGetEarlyAccess}/>
       <HowItWorksSection />
       <FeaturesSection />
       <UseCasesSection />
